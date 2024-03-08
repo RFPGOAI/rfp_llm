@@ -63,6 +63,7 @@ for r in rfps:
                     'key_considerations': key_considerations}
         json.dump(rfps, open(f'./rfp_data/{fp}_w_metadata.json', 'w'))
 
+@st.cache_data
 def get_sim_company(rfp_metadata):
     key_conds = rfp_metadata['key_considerations']
     sim = db.similarity_search(key_conds, k=1)
@@ -91,9 +92,6 @@ def main():
         if set(r['condition']) == condition_key:
             selected_rfp = r
             break
-
-
-    
 
     st.title('RFP Analysis')
     col1, col2, col3 = st.columns(3)
