@@ -65,9 +65,9 @@ for r in rfps:
 
 @st.cache_data
 def get_sim_company(rfp_metadata):
-    key_conds = rfp_metadata['key_considerations']
-    sim = db.similarity_search(key_conds, k=1)
-    return sim[0].page_content
+    #key_conds = rfp_metadata['key_considerations']
+    sim = db.similarity_search(rfp_metadata, k=3)
+    return sim#[0].page_content
 
 
 def main():
@@ -77,6 +77,7 @@ def main():
              'vendor is local']
 
     st.sidebar.title('Select RFP prompt')
+
     checked_conds = {}
     for i, c in enumerate(rfp_conditions):
         if i == 0:
@@ -94,21 +95,29 @@ def main():
             break
 
     st.title('RFP Analysis')
-    col1, col2, col3 = st.columns(3)
-    
+
+    tab1, tab2, tab3 = st.tabs(["RFP detail", "Key considerations", "Suggested companies"])
     if selected_rfp:
-        with col1:
-            st.subheader('Selected RFP')
+        with tab1:
+            st.subheader('RFP composer')
+            st.text_area('Input prompt', value=selected_rfp['prompt'])
+            st.subheader('Generated RFP')
             st.write(selected_rfp['response']['content'])
-
-        with col2:
+        with tab2:
             st.subheader('Key considerations')
-            st.write(selected_rfp['metadata']['key_considerations'].split('\n\n')[1])
-
-        with col3:
-            st.subheader('Suggested company')
-            suggested_company = get_sim_company(selected_rfp['metadata'])
-            st.write(suggested_company)
+            consideration_list = selected_rfp['metadata']['key_considerations'].split('\n\n')[1]
+            consideration_list = consideration_list.split('\n')
+            consideration_dict = {}
+            for c in consideration_list:
+                consideration_dict[c] = st.checkbox(c, value=True)
+            metadata = ', '.join([k for k, v in consideration_dict.items() if v])
+        with tab3:
+            st.subheader('Suggested companues (ordered by relevance)')
+            suggested_companies = get_sim_company(metadata)
+            for i, s in enumerate(suggested_companies):
+                st.write(f'{i+1}: \n')
+                st.write(f'{s.page_content}')
+                st.write('\n')
 
 if __name__ == "__main__":
     main()
