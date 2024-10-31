@@ -1,49 +1,32 @@
-page_summary = """The following is a page in a longer document. \
-     Summarize it in one or two sentences.\
-        \n\n{document}\
-        \n\nSummary: """
+summary_criteria = """Pay particular attention to information about the following:
+1. The RFP’s purpose and budget (if budget known and if budget unknown state “unspecified”)
+2. RFP’s scope of work
+3. Timeline for scope of work 
+4. RFP process timeline 
+5. Proposal submission requirements
+6. Proposal evaluation criteria (including weights for each criterion)
+7. Important points of contact
+8. Terms and conditions"""
 
+page_summary = """The following is a page in a longer document. \
+Summarize it in one or two sentences.\
+Do not generate anything else.\
+\n\n{document}\
+\n\nSummary: """
 
 consolidate_summary_long = """The following are summaries of pages in a \
 Request for Proposal document. \
 Consolidate them into a single detailed summary.\
 Ensure you capture all information relevant to the proposal.\
+Do not generate anything else.\
 \n\n{document}
 \n\nSummary: """
 
 consolidate_summary_short = """Shorten the following summary of a Request for Proposal.\n\
-Capture information relevant to drafting a response to this document.
+Capture information relevant to drafting a response to this document.\
+Do not generate anything else.\
 \n\n{document}
 \n\nSummary: """
-
-rag_sections = """What are the sections required for a response to this proposal?"""
-
-get_sections = """The following document contains information about \
-the relevant sections of a proposal. \
-Return a list of the sections, one per line. \
-No additional information is needed. \
-Use the following format:\n\n
-
-1. First section name\n
-2. Second section name\n
-...
-
-{document}"""
-
-rag_sections_detail = """What are the requirements for the {document} section?"""
-
-get_sections_detail = """The following document contains information about \
-the {section_name} section of a proposal. \
-Return the requirements for drafting this section as a brief summary.
-
-Document:\n
-{document}
-Summary:\n"""
-
-
-section_questions = """Drafting the {document_1} section has the following requirements:\n\
-{document_2}\n\n\
-In drafting the section, what questions would you need to answer?"""
 
 vendor_answers = """You are drafting the {document} section of a proposal. \
 Your company details are as follows: \n\
