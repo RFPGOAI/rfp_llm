@@ -1,4 +1,4 @@
-from process.prompts import *
+from rfpgo.summarize.prompts import *
 import PyPDF2
 from utils import call_llm
 

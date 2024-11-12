@@ -36,14 +36,3 @@ Ensure the draft adheres to the following criteria:
 </draft>
 
 <revised_draft>"""
-
-#NOT USED
-# draft_revise = """Review the following draft of the {section} section of a proposal. \
-# Ensure that the draft addresses these questions and topic areas: 
-# {checklist_reqs}
-
-# And ensure the draft meets the following criteria:
-# {criteria}
-
-# Avoid dramatically changing the draft.\
-# Draft: """
