@@ -1,40 +1,49 @@
 from summarize.summarizer import Summarizer
-#from draft.drafter import Drafter
-#from checklist.checklist import Checklist
+from draft.drafter import Drafter
+from checklist.checklist import Checklist
 import sys
 import os
 import pandas as pd
-from pathlib import Path
+from utils import format_output_fn
 from langchain_anthropic import ChatAnthropic
-from langchain.llms import Ollama
+from langchain_community.llms import Ollama
 from langchain_openai import OpenAI, ChatOpenAI
+from pathlib import Path
 
 # TODO: replace with whatever auth flow we decide
 from credentials import *
 os.environ["ANTHROPIC_API_KEY"] = ANTHROPIC_KEY
 os.environ["OPENAI_API_KEY"] = OPENAI_KEY
 
-# TODO: probably pick model per task, right now just implementing for summary
-anth_haiku = ChatAnthropic(model='claude-3-haiku-20240307')
-# gemma is useful for testing this stuff out
-gemma = Ollama(model="gemma2")
-
 # model dict
 model_dict = {}
 model_dict['haiku'] = ChatAnthropic(model='claude-3-haiku-20240307')
+model_dict['opus'] = ChatAnthropic(model='claude-3-opus-20240229')
 model_dict['gemma'] = Ollama(model="gemma2")
 model_dict['gpt35'] = ChatOpenAI(model='gpt-3.5-turbo')
+
+# argparse 
+from argparse import ArgumentParser
+parser = ArgumentParser()
+parser.add_argument('-fn', type=str, help='path to file or directory for RFP', 
+                    required=True)
+parser.add_argument('-m', '--model_name', type=str, 
+                    help='model name, choose from gemma, gpt35, haiku, opus',
+                    required=True)
+parser.add_argument('-d', '--draft_model', type=str, 
+                    help='model name for drafting, default opus',
+                    default='opus')
+parser.add_argument('-v', '--vendor_info', type=str, help='path to vendor info txt file',
+                    default=None)
+
+
 
 def run_summary(model, fn):
     summarizer = Summarizer(model, fn)
     
-    # create parent filepath
-    fn_formatted = fn.stem.replace(' ', '_')
-    output_fn = Path(
-        f'../data/output/{fn_formatted}/summary_{summarizer.llm_name}.csv')
-    output_fn.parent.mkdir(parents=True, exist_ok=True)
-    # if exists, do not continue
+    output_fn = format_output_fn(fn, llm_name=summarizer.llm_name, module_name='summary')
     if output_fn.exists():
+        print(f'{output_fn} already exists')
         return
     
     summarizer.summarize()
@@ -45,39 +54,72 @@ def run_summary(model, fn):
         columns=['document', 'summary'])
     result.loc[0, 'long_summary'] = summarizer.summary
     result.loc[0, 'short_summary'] = summarizer.summary_short
-    result.loc[0, 'page_prompt'] = summarizer.page_prompt
-    result.loc[0, 'consolidate_prompt_long'] = summarizer.consolidate_prompt_long
-    result.loc[0, 'consolidate_prompt_short'] = summarizer.consolidate_prompt_short
+    result.loc[0, 'full_summary'] = summarizer.summary_full
+    result.loc[0, 'full_summary_format'] = summarizer.summary_format
     result.to_csv(output_fn, index=False)
 
-def run_draft(model, fn):
-    drafter = Drafter()
-    drafter.draft()
-    drafter.review()
-    return drafter
-
 def run_checklist(model, fn):
-    checklist = Checklist()
+    checklist = Checklist(model, fn)
+
+    output_fn = format_output_fn(fn, llm_name=checklist.llm_name, module_name='checklist')
+    if output_fn.exists():
+        print(f'{output_fn} already exists')
+        return
+
     checklist.checklist()
-    return checklist
+    # checklist outputs different iterations
+    narrative = checklist.output()
+    narrative.to_csv(output_fn, index=False)
+
+def run_draft(model, draft_model, fn, vendor_info=None):
+    drafter = Drafter(model, draft_model, fn)
+    
+    output_fn = format_output_fn(fn, llm_name=drafter.llm_name, module_name='draft')
+    if output_fn.exists():
+        print(f'{output_fn} already exists')
+        return
+    
+    if vendor_info is not None:
+        drafter.add_vendor_info(vendor_info)
+
+    drafter.draft()
+    # output to csv, row is outline, draft
+    df = pd.DataFrame({'outline': [drafter.raw_outline], 'draft': [drafter.draft_compiled]})
+    df.to_csv(output_fn, index=False)
 
 
-def main(model, fn):
+def main(model, draft_model, fn, vendor_info=None):
     run_summary(model, fn)
+    run_checklist(model, fn)
+    run_draft(model, draft_model, fn, vendor_info)
     pass
 
 
 if __name__ == "__main__":
     # TODO: this is hacky - assuming certain position of args
+    args = parser.parse_args()
+    fn = args.fn
+    model_name = args.model_name
+    draft_model_name = args.draft_model
+    vendor_info = args.vendor_info
 
-    _, fn, model_name = sys.argv
+    if model_name not in model_dict:
+        print(f'{model_name} not in model_dict')
+        sys.exit(1)
 
     model = model_dict[model_name]
+
+    if draft_model_name not in model_dict:
+        print(f'{draft_model_name} not in model_dict')
+        sys.exit(1)
+
+    draft_model = model_dict[draft_model_name]
 
     fn = Path(fn)
     if fn.is_dir():
         fns = fn.glob('*.pdf')
         for f in fns:
-            main(model, f)
+            main(model, draft_model, f, vendor_info)
     else:
-        main(model, fn) 
+        main(model, draft_model, fn, vendor_info)
+

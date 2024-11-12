@@ -8,25 +8,46 @@ summary_criteria = """Pay particular attention to information about the followin
 7. Important points of contact
 8. Terms and conditions"""
 
+# this can be repeated with the other summary blocks
+end_block = """Do not generate anything else.
+""" + \
+summary_criteria + \
+"""
+{document}
+
+Summary: """
+
+full_summary = """The following is a government Request for Proposal document. \
+Summarize the content.
+""" + end_block
+
+full_format_summary = """The following is a government Request for Proposal document. \
+Fill in the following information and output a formatted response. \
+If the information is not available, put "Not available".
+
+Project name:
+Agency:
+Solicitation number:
+Contact person:
+Contact email:
+Submission deadline:
+Contract term:
+Summary:
+
+{document}"""
+
 page_summary = """The following is a page in a longer document. \
-Summarize it in one or two sentences.\
-Do not generate anything else.\
-\n\n{document}\
-\n\nSummary: """
+Summarize it in a few sentences.
+""" + end_block
 
 consolidate_summary_long = """The following are summaries of pages in a \
 Request for Proposal document. \
-Consolidate them into a single detailed summary.\
-Ensure you capture all information relevant to the proposal.\
-Do not generate anything else.\
-\n\n{document}
-\n\nSummary: """
+Consolidate them into a single detailed summary.
+""" + end_block
 
 consolidate_summary_short = """Shorten the following summary of a Request for Proposal.\n\
-Capture information relevant to drafting a response to this document.\
-Do not generate anything else.\
-\n\n{document}
-\n\nSummary: """
+Capture information relevant to drafting a response to this document.
+""" + end_block
 
 vendor_answers = """You are drafting the {document} section of a proposal. \
 Your company details are as follows: \n\

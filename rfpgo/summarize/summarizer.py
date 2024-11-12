@@ -6,6 +6,8 @@ class Summarizer(object):
     page_prompt = page_summary
     consolidate_prompt_long = consolidate_summary_long
     consolidate_prompt_short = consolidate_summary_short
+    full_summary = full_summary
+    full_format_summary = full_format_summary
 
     def __init__(self, llm, fn):
         self.llm = llm
@@ -44,4 +46,12 @@ class Summarizer(object):
         c = self.consolidate_prompt_short.format(document=self.summary)
         self.summary_short = call_llm(c, self.llm)
 
+        # complete summary
+        # TODO: this is expensive, let's check this makes sense
+        c = self.full_summary.format(document='\n'.join(self.split_doc))
+        self.summary_full = call_llm(c, self.llm)
+
+        # formatted summary
+        c = self.full_format_summary.format(document='\n'.join(self.split_doc))
+        self.summary_format = call_llm(c, self.llm)
         
