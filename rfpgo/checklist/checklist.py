@@ -4,15 +4,16 @@ from summarize.summarizer import Summarizer
 from pandas import Series
 
 class Checklist(object):
+    """Outlining RFP proposal
+
+    Args:
+        llm (llm object): llm object
+        fn (str): file path to RFP
+        llm_drafter (llm object): llm object for drafting, only used in workflow, not in checklist
+    """
 
     # full RFP checklist
     full_rfp_prompt = full_rfp
-
-    # checklist_from_page_summaries
-    checklist_from_page_summaries = checklist_from_page_summaries
-
-    # formatting prompt
-    format_sections = format_sections
 
     def _count_tokens(self, text):
         # standard - ~3.5 characters / token
@@ -70,16 +71,6 @@ class Checklist(object):
             self.questions_revisions[1],
             self.checklist_revisions[2],
         ]
-
-        # TODO: decide if this is even a worthwhile strategy, full doc seems to work much better
-        # if not hasattr(self.summarizer, 'page_summaries'):
-        #     print('Running summarizer...')
-        #     self.summarizer.summarize()
-
-        # self.c_page = self.checklist_from_page_summaries.format(
-        #     document=self.summarizer.joined_p)
-        # self.c_page_tokens = self._count_tokens(self.c_page)
-        # self.c_page_response = call_llm(self.c_page, self.llm)
 
     def display(self):
         print('\n----\n'.join(self.narrative))
