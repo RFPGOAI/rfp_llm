@@ -3,6 +3,13 @@ from utils import *
 import pandas as pd
 
 class Drafter(object):
+    """Drafting RFP proposal
+
+    Args:
+        model (llm object): only used for retrieving the checklist
+        draft_model (llm object): llm object for drafting
+        fn (str): file path to RFP
+    """
     # store a draft-specific version of this prompt
     draft_prompt = draft_prompt
     vendor_info = '\n'
@@ -33,6 +40,8 @@ class Drafter(object):
         return d
     
     def _process_outline(self, raw_outline):
+        # this splits up the outline output
+        # TODO: very specific to the checklist output, may not be general
         outline_dict = {}
         for section in raw_outline.split('\n\n')[1:-1]:
             lines = section.split('\n')
@@ -40,6 +49,15 @@ class Drafter(object):
         return outline_dict
     
     def draft(self):
+        """
+        Draft the sections of the RFP using the provided model.
+
+        This function takes each section of the outline and generates text
+        for that section using the provided model. The text is then stored in
+        a dictionary, keyed by section name.
+
+        The compiled text for all sections is stored in self.draft_compiled
+        """
         self.sections = {}
         for section in self.outline:
             prompt = {

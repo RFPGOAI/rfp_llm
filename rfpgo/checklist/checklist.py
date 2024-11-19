@@ -16,7 +16,11 @@ class Checklist(object):
     full_rfp_prompt = full_rfp
 
     def _count_tokens(self, text):
-        # standard - ~3.5 characters / token
+        """Count the number of tokens in the given text.
+
+        This assumes that the text has been tokenized in a standard way,
+        with approximately 3.5 characters per token.
+        """
         return round(len(text)/3.5)
 
     def __init__(self, llm, fn, llm_drafter=None):
@@ -47,13 +51,13 @@ class Checklist(object):
         self.checklist_revisions = []
         self.questions_revisions = []
 
+        # first version - take full RFP, generate checklist
         self.c_full = self.full_rfp_prompt.format(document=self.full_rfp_text)
         self.c_full_tokens = self._count_tokens(self.c_full)
         self.c_full_response = call_llm(self.c_full, self.llm_drafter).split('</outline>')[0]
-
-        # first version
         self.checklist_revisions.append(self.c_full_response)
 
+        # ask questions, revise based on answers
         for i in range(turns):
             c_answers_response = self._qa_turn()
             # step 4 - update with answers
@@ -64,6 +68,7 @@ class Checklist(object):
             self.checklist_revisions.append(c_update_response)
             self.questions_revisions.append(c_answers_response)
 
+        # format for output
         self.narrative = [
             self.checklist_revisions[0],
             self.questions_revisions[0],
@@ -73,8 +78,10 @@ class Checklist(object):
         ]
 
     def display(self):
+        # stdout display results
         print('\n----\n'.join(self.narrative))
 
     def output(self):
+        # format for csv output
         return Series(self.narrative)
 
