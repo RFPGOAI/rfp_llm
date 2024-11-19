@@ -1,8 +1,16 @@
-from process.prompts import *
+from .prompts import *
 import PyPDF2
 from utils import call_llm
 
 class Summarizer(object):
+    """
+    Summarizer class
+
+    Args:
+        llm (llm object): llm object
+        fn (str): file path to RFP
+    """
+
     page_prompt = page_summary
     consolidate_prompt_long = consolidate_summary_long
     consolidate_prompt_short = consolidate_summary_short

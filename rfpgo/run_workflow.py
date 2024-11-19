@@ -36,8 +36,6 @@ parser.add_argument('-d', '--draft_model', type=str,
 parser.add_argument('-v', '--vendor_info', type=str, help='path to vendor info txt file',
                     default=None)
 
-
-
 def run_summary(model, fn):
     summarizer = Summarizer(model, fn)
     
@@ -96,7 +94,6 @@ def main(model, draft_model, fn, vendor_info=None):
 
 
 if __name__ == "__main__":
-    # TODO: this is hacky - assuming certain position of args
     args = parser.parse_args()
     fn = args.fn
     model_name = args.model_name
